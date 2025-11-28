@@ -3,20 +3,27 @@ import cors from 'cors';
 import { connectDB } from './config/database.js';
 import 'dotenv/config';
 
+// Importar rutas
+import rubricaRoutes from './routes/rubrica.routes.js';
+import docenteRoutes from './routes/docente.routes.js';
+
 const app = express();
 
-// Middlewares base
+// Middlewares
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Vital para recibir JSON en POST
 
-// Ruta de prueba
+// Rutas API
+app.use('/api/rubrica', rubricaRoutes);
+app.use('/api/docentes', docenteRoutes);
+
+// Ruta base
 app.get('/', (req, res) => {
-    res.send('🚀 API del Sistema SIED v2.0 funcionando');
+    res.send('🚀 API SIED v2.0 Online');
 });
 
-// Iniciar servidor
 const startServer = async () => {
-    await connectDB(); // Intentar conectar a la BD primero
+    await connectDB();
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Servidor corriendo en http://localhost:${PORT}`);
