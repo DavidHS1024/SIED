@@ -3,23 +3,25 @@ import cors from 'cors';
 import { connectDB } from './config/database.js';
 import 'dotenv/config';
 
-// Importar rutas
+// --- IMPORTAR RUTAS ---
 import rubricaRoutes from './routes/rubrica.routes.js';
 import docenteRoutes from './routes/docente.routes.js';
+import evaluacionRoutes from './routes/evaluacion.routes.js'; // <--- NUEVO
 
 const app = express();
 
 // Middlewares
 app.use(cors());
-app.use(express.json()); // Vital para recibir JSON en POST
+app.use(express.json());
 
-// Rutas API
+// --- USAR RUTAS ---
 app.use('/api/rubrica', rubricaRoutes);
 app.use('/api/docentes', docenteRoutes);
+app.use('/api/evaluacion', evaluacionRoutes); // <--- NUEVO
 
 // Ruta base
 app.get('/', (req, res) => {
-    res.send('🚀 API SIED v2.0 Online');
+    res.send('🚀 API SIED v2.0 Online - Ready for Scrum');
 });
 
 const startServer = async () => {
