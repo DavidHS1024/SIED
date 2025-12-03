@@ -3,33 +3,36 @@ import { Usuario, Periodo, Docente, Dimension, RubricaItem } from './src/models/
 import bcrypt from 'bcrypt';
 
 /**
- * SEEDER DE DATOS INICIALES (SIED v2.0)
- * Corrige errores de integridad en RubricaItem y Docente.
+ * SEEDER DE DATOS MAESTROS (SIED v2.0)
+ * Carga la Rúbrica Oficial del Reglamento UNAC (19 Ítems).
  */
 const seed = async () => {
     try {
-        console.log('🌱 Iniciando Seed...');
+        console.log('🌱 Iniciando Seed SIED v2.0...');
         
-        // 1. Conectar y Limpiar BD
         await connectDB();
-        await sequelize.sync({ force: true }); // Borra y crea tablas desde cero
-        console.log('✅ Base de datos reseteada y sincronizada.');
+        // force: true recrea las tablas basándose en tus MODELOS. 
+        // Asegúrate que tus modelos (Dimension.js, RubricaItem.js) tengan los campos correctos.
+        await sequelize.sync({ force: true }); 
+        console.log('✅ Base de datos sincronizada (Tablas limpias).');
 
-        // 2. Crear USUARIOS
+        // ------------------------------------------------------------------------
+        // 1. USUARIOS Y ACTORES
+        // ------------------------------------------------------------------------
         const passwordHash = await bcrypt.hash('123456', 10);
 
-        // A. Usuario ADMIN
+        // A. Admin
         await Usuario.create({
             idUsuario: 1,
             email: 'admin@unac.edu.pe',
             passwordHash,
             nombres: 'Super',
-            apellidos: 'Admin',
+            apellidos: 'Administrador',
             rol: 'ADMIN',
             estado: true
         });
 
-        // B. Usuario DOCENTE
+        // B. Docente (Juan Perez)
         const userDocente = await Usuario.create({
             idUsuario: 2,
             email: 'juan.perez@unac.edu.pe',
@@ -40,31 +43,41 @@ const seed = async () => {
             estado: true
         });
 
-        // C. Usuario EVALUADOR (Comisión)
+        await Docente.create({
+            idDocente: 1, 
+            idUsuario: userDocente.idUsuario,
+            codigoDocente: '20230001',
+            categoria: 'PRINCIPAL',
+            departamentoAcademico: 'INGENIERIA DE SISTEMAS'
+        });
+
+        // C. Comisión Evaluadora
         await Usuario.create({
             idUsuario: 99,
             email: 'comision@unac.edu.pe',
             passwordHash,
             nombres: 'Comisión',
             apellidos: 'Evaluadora',
-            rol: 'ADMIN', 
+            rol: 'COMISION', // Según tu ENUM
             estado: true
         });
 
-        console.log('✅ Usuarios creados.');
-
-        // 3. Crear Perfil de DOCENTE
-        // Usamos los campos exactos de tu modelo Docente.js
-        await Docente.create({
-            idDocente: 1, 
-            idUsuario: userDocente.idUsuario,
-            codigoDocente: '20230001', // Dato obligatorio agregado
-            categoria: 'PRINCIPAL',
-            departamentoAcademico: 'INGENIERIA DE SISTEMAS'
+        // D. Director (Nuevo actor en tu SQL v2)
+        await Usuario.create({
+            idUsuario: 100,
+            email: 'director@unac.edu.pe',
+            passwordHash,
+            nombres: 'Director',
+            apellidos: 'Departamento',
+            rol: 'DIRECTOR',
+            estado: true
         });
-        console.log('✅ Perfil Docente creado (ID: 1).');
 
-        // 4. Crear PERIODO
+        console.log('✅ Usuarios creados (Admin, Docente, Comisión, Director).');
+
+        // ------------------------------------------------------------------------
+        // 2. PERIODO ACADÉMICO
+        // ------------------------------------------------------------------------
         await Periodo.create({
             idPeriodo: 1,
             nombre: '2025-A',
@@ -72,38 +85,78 @@ const seed = async () => {
             fechaFin: '2025-07-31',
             estado: 'ACTIVO'
         });
-        console.log('✅ Periodo 2025-A creado.');
+        console.log('✅ Periodo 2025-A activo.');
 
-        // 5. Crear RÚBRICA (Dimensiones e Items)
+        // ------------------------------------------------------------------------
+        // 3. RÚBRICA (DIMENSIONES E ITEMS - REGLAMENTO UNAC)
+        // ------------------------------------------------------------------------
         
-        // Crear Dimensión
-        const dim1 = await Dimension.create({
-            nombre: 'Gestión de la Enseñanza',
-            peso: 30
+        // Dimensión 1
+        const dim1 = await Dimension.create({ 
+            idDimension: 1, 
+            nombre: 'Proceso Enseñanza Aprendizaje', 
+            descripcion: 'Evaluación por estudiantes, sílabo, plataforma, tutoría' // Si tu modelo Dimension.js tiene este campo
+        });
+        // Dimensión 2
+        const dim2 = await Dimension.create({ 
+            idDimension: 2, 
+            nombre: 'Investigación', 
+            descripcion: 'Proyectos, asesoría de tesis, jurado, publicaciones' 
+        });
+        // Dimensión 3
+        const dim3 = await Dimension.create({ 
+            idDimension: 3, 
+            nombre: 'Extensión y Responsabilidad Social', 
+            descripcion: 'Eventos académicos, RSU, organizaciones sociales' 
+        });
+        // Dimensión 4
+        const dim4 = await Dimension.create({ 
+            idDimension: 4, 
+            nombre: 'Gestión Académico-Administrativa', 
+            descripcion: 'Cargos directivos, comisiones' 
+        });
+        // Dimensión 5
+        const dim5 = await Dimension.create({ 
+            idDimension: 5, 
+            nombre: 'Formación Profesional', 
+            descripcion: 'Grados, especializaciones, capacitación, movilidad' 
         });
 
-        // Crear Items (CORREGIDO SEGÚN MODELO RubricaItem.js)
-        // Campos obligatorios: idItem, idDimension, numeroItem, concepto, puntajeMaximo, rolEvaluador
-        await RubricaItem.bulkCreate([
-            { 
-                idItem: 1, 
-                idDimension: dim1.idDimension,
-                numeroItem: 1,                  // Requerido
-                concepto: 'Entrega silabo',     // Antes era 'indicador'
-                puntajeMaximo: 5.00,
-                rolEvaluador: 'COMISION'        // Requerido (ENUM)
-            },
-            { 
-                idItem: 2, 
-                idDimension: dim1.idDimension,
-                numeroItem: 2,                  // Requerido
-                concepto: 'Cumplimiento avance', // Antes era 'indicador'
-                puntajeMaximo: 5.00,
-                rolEvaluador: 'COMISION'        // Requerido (ENUM)
-            }
-        ]);
+        // ITEMS (Carga Masiva)
+        const items = [
+            // D1: Enseñanza
+            { idDimension: 1, numeroItem: 1, concepto: 'Evaluación electrónica de estudiantes a docente', puntajeMaximo: 5.00, rolEvaluador: 'SISTEMA' },
+            { idDimension: 1, numeroItem: 2, concepto: 'Sílabo (Subido, estructura, articulado)', puntajeMaximo: 7.00, rolEvaluador: 'COMISION' },
+            { idDimension: 1, numeroItem: 3, concepto: 'Uso de Plataforma Educativa SGA', puntajeMaximo: 6.00, rolEvaluador: 'COMISION' },
+            { idDimension: 1, numeroItem: 4, concepto: 'Tutoría', puntajeMaximo: 4.00, rolEvaluador: 'COMISION' },
 
-        console.log('✅ Rúbrica creada correctamente (Items con formato válido).');
+            // D2: Investigación
+            { idDimension: 2, numeroItem: 5, concepto: 'Proyecto y trabajos de Investigación científica', puntajeMaximo: 5.00, rolEvaluador: 'COMISION' },
+            { idDimension: 2, numeroItem: 6, concepto: 'Asesoría de proyecto de investigación (Tesis)', puntajeMaximo: 6.00, rolEvaluador: 'COMISION' },
+            { idDimension: 2, numeroItem: 7, concepto: 'Jurado de trabajo de investigación', puntajeMaximo: 3.00, rolEvaluador: 'COMISION' },
+            { idDimension: 2, numeroItem: 8, concepto: 'Publicaciones científicas (últimos 2 años)', puntajeMaximo: 9.00, rolEvaluador: 'COMISION' },
+            { idDimension: 2, numeroItem: 9, concepto: 'Participación en eventos científicos (presente año)', puntajeMaximo: 7.00, rolEvaluador: 'COMISION' },
+
+            // D3: RSU
+            { idDimension: 3, numeroItem: 10, concepto: 'Participación en evento académico (presente año)', puntajeMaximo: 3.00, rolEvaluador: 'COMISION' },
+            { idDimension: 3, numeroItem: 11, concepto: 'Participación en proyectos de RSU (DUERS/CERES)', puntajeMaximo: 5.00, rolEvaluador: 'COMISION' },
+            { idDimension: 3, numeroItem: 12, concepto: 'Participación activa en organización social', puntajeMaximo: 2.00, rolEvaluador: 'COMISION' },
+
+            // D4: Gestión
+            { idDimension: 4, numeroItem: 13, concepto: 'Desempeño en el cargo de dirección', puntajeMaximo: 5.00, rolEvaluador: 'DIRECTOR' },
+            { idDimension: 4, numeroItem: 14, concepto: 'Participación en comisiones y coordinaciones', puntajeMaximo: 3.00, rolEvaluador: 'COMISION' },
+
+            // D5: Formación
+            { idDimension: 5, numeroItem: 15, concepto: 'Autoevaluación del docente', puntajeMaximo: 10.00, rolEvaluador: 'DOCENTE' },
+            { idDimension: 5, numeroItem: 16, concepto: 'Formación (Grados académicos)', puntajeMaximo: 6.00, rolEvaluador: 'COMISION' },
+            { idDimension: 5, numeroItem: 17, concepto: 'Certificaciones, diplomados, segunda especialidad', puntajeMaximo: 7.00, rolEvaluador: 'COMISION' },
+            { idDimension: 5, numeroItem: 18, concepto: 'Capacitación y actualización', puntajeMaximo: 3.00, rolEvaluador: 'COMISION' },
+            { idDimension: 5, numeroItem: 19, concepto: 'Movilidad docente', puntajeMaximo: 4.00, rolEvaluador: 'COMISION' }
+        ];
+
+        await RubricaItem.bulkCreate(items);
+
+        console.log('✅ Rúbrica completa cargada (19 Ítems) según SQL v2.1');
         console.log('🏁 Seed completado con éxito.');
 
     } catch (error) {

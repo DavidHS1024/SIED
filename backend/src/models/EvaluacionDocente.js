@@ -5,21 +5,41 @@ const EvaluacionDocente = sequelize.define('EvaluacionDocente', {
     idEvaluacion: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        field: 'idEvaluacion'
+        autoIncrement: true
     },
-    idDocente: { type: DataTypes.INTEGER, allowNull: false },
-    idPeriodo: { type: DataTypes.INTEGER, allowNull: false },
-    puntajeFinal: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0.00 },
-    categoria: { type: DataTypes.STRING(50), defaultValue: 'PENDIENTE' },
+    idDocente: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    idPeriodo: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    puntajeFinal: {
+        type: DataTypes.DECIMAL(5, 2),
+        defaultValue: 0.00
+    },
+    categoria: {
+        type: DataTypes.STRING(50),
+        defaultValue: 'PENDIENTE'
+    },
     estado: {
+        // ALINEADO CON DB: Solo 'EN_PROCESO' o 'FINALIZADO'
         type: DataTypes.ENUM('EN_PROCESO', 'FINALIZADO'),
         defaultValue: 'EN_PROCESO'
     },
-    fechaCierre: { type: DataTypes.DATE }
+    fechaCierre: {
+        type: DataTypes.DATE
+    }
 }, {
     tableName: 'EvaluacionDocente',
-    timestamps: false
+    timestamps: false, // No usar createdAt/updatedAt automáticos si la tabla no los tiene
+    indexes: [
+        {
+            unique: true,
+            fields: ['idDocente', 'idPeriodo']
+        }
+    ]
 });
 
 export default EvaluacionDocente;
