@@ -1,128 +1,152 @@
-import { sequelize, EvaluacionDocente, DetalleEvaluacion, RubricaItem } from '../models/index.js';
+import { sequelize, EvaluacionDocente, DetalleEvaluacion } from '../models/index.js';
 
-// 1. Obtener Evaluación (Sin cambios, estaba bien)
+/**
+ * ============================================================================
+ * CONTROLADOR DE EVALUACIÓN DOCENTE
+ * Gestión de auditorías, cálculos de puntaje y persistencia transaccional.
+ * ============================================================================
+ */
+
+/**
+ * Obtiene el estado actual de una evaluación.
+ * Endpoint: GET /api/evaluacion/:idDocente/:idPeriodo
+ */
 export const getEvaluacion = async (req, res) => {
     const { idDocente, idPeriodo } = req.params;
+
     try {
-        let evaluacion = await EvaluacionDocente.findOne({
+        // Buscamos la cabecera con sus detalles anidados (Eager Loading)
+        const evaluacion = await EvaluacionDocente.findOne({
             where: { idDocente, idPeriodo },
             include: [{ model: DetalleEvaluacion }]
         });
-        res.json({ success: true, data: evaluacion || null });
+
+        return res.json({
+            success: true,
+            data: evaluacion || null // Retorna null si aún no existe auditoría
+        });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error al obtener evaluación' });
+        console.error("[EvaluacionController] Error al obtener registro:", error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'Error interno al consultar la evaluación.' 
+        });
     }
 };
 
-// 2. Guardar Checklist (CORREGIDO Y ROBUSTECIDO)
+/**
+ * Guarda o actualiza la auditoría de la Comisión (Checklist).
+ * Utiliza transacciones para asegurar la integridad de los datos (ACID).
+ * Endpoint: POST /api/evaluacion
+ */
 export const saveEvaluacionComision = async (req, res) => {
+    // 1. Validación de Payload (Fail Fast)
     const { idDocente, idPeriodo, detalles, idEvaluador } = req.body;
 
-    // VALIDACIÓN PREVIA: Asegurar que lleguen los datos críticos
-    if (!idDocente || !idPeriodo || !detalles || !Array.isArray(detalles)) {
+    if (!idDocente || !idPeriodo || !Array.isArray(detalles)) {
+        console.warn("[EvaluacionController] Payload inválido recibido:", req.body);
         return res.status(400).json({ 
             success: false, 
-            message: 'Faltan datos obligatorios o el formato de "detalles" es incorrecto.' 
+            message: 'Datos incompletos. Se requiere idDocente, idPeriodo y un array de detalles.' 
         });
     }
 
-    const t = await sequelize.transaction(); 
+    // 2. Iniciar Transacción (Si falla un insert, se revierte todo)
+    const t = await sequelize.transaction();
 
     try {
-        // A. Buscar o Crear la Cabecera (EvaluacionDocente)
-        // Nota: findOrCreate devuelve un array [instancia, booleano_creado]
-        let [evaluacion, created] = await EvaluacionDocente.findOrCreate({
+        console.log(`[EvaluacionController] Iniciando proceso para Docente ID: ${idDocente}`);
+
+        // A. Gestión de la Cabecera (Header) - Patrón Singleton por periodo/docente
+        // findOrCreate devuelve un array: [instancia, boleano_creado]
+        let [evaluacionHeader, created] = await EvaluacionDocente.findOrCreate({
             where: { idDocente, idPeriodo },
             defaults: {
                 estado: 'EN_PROCESO',
                 puntajeFinal: 0,
-                categoria: 'PENDIENTE'
+                fechaEvaluacion: new Date()
             },
             transaction: t
         });
 
+        // Obtener ID de forma segura (compatible si la PK es 'id' o 'idEvaluacion')
+        const headerId = evaluacionHeader.getDataValue('idEvaluacion') || evaluacionHeader.id;
+
+        if (!headerId) throw new Error("No se pudo recuperar el ID de la cabecera de evaluación.");
+
+        // B. Procesamiento de Detalles (Batch Processing)
         let sumaPuntajes = 0;
 
-        // B. Procesar cada item del checklist
         for (const item of detalles) {
-            // Validar que el item tenga los datos mínimos
-            if (!item.idItem || item.puntaje === undefined) {
-                throw new Error(`Faltan datos en uno de los detalles (idItem o puntaje).`);
-            }
+            // Saneamiento básico de entrada
+            const puntaje = Number(item.puntaje) || 0;
+            const observacion = item.observacion || '';
 
-            // Obtener info de la Rúbrica para validar topes
-            const rubricaInfo = await RubricaItem.findByPk(item.idItem);
-            
-            if (!rubricaInfo) {
-                throw new Error(`El ítem de rúbrica con ID ${item.idItem} no existe en la base de datos.`);
-            }
-
-            if (Number(item.puntaje) > Number(rubricaInfo.puntajeMaximo)) {
-                throw new Error(`El puntaje (${item.puntaje}) del ítem ${item.idItem} excede el máximo permitido (${rubricaInfo.puntajeMaximo}).`);
-            }
-
-            // Upsert manual (Buscar si existe para actualizar, sino crear)
+            // Upsert: Busca si existe el detalle para ese item, si no, lo crea.
             const detalleExistente = await DetalleEvaluacion.findOne({
                 where: { 
-                    idEvaluacion: evaluacion.idEvaluacion,
-                    idItem: item.idItem
+                    idEvaluacion: headerId, 
+                    idItem: item.idItem 
                 },
                 transaction: t
             });
 
             if (detalleExistente) {
                 await detalleExistente.update({
-                    puntajeObtenido: item.puntaje,
-                    observacion: item.observacion || '',
-                    evaluadoPor: idEvaluador,
-                    fechaEvaluacion: new Date()
+                    puntajeObtenido: puntaje,
+                    observacion: observacion,
+                    evaluadoPor: idEvaluador
                 }, { transaction: t });
             } else {
                 await DetalleEvaluacion.create({
-                    idEvaluacion: evaluacion.idEvaluacion,
+                    idEvaluacion: headerId,
                     idItem: item.idItem,
-                    puntajeObtenido: item.puntaje,
-                    observacion: item.observacion || '',
+                    puntajeObtenido: puntaje,
+                    observacion: observacion,
                     evaluadoPor: idEvaluador
                 }, { transaction: t });
             }
 
-            sumaPuntajes += Number(item.puntaje);
+            sumaPuntajes += puntaje;
         }
 
-        // C. Calcular Categoría
-        let categoria = 'DEFICIENTE';
+        // C. Regla de Negocio: Categorización (Según reglamento UNAC)
+        let categoria = 'DEFICIENTE'; // Default
         if (sumaPuntajes >= 90) categoria = 'EXCELENTE';
         else if (sumaPuntajes >= 80) categoria = 'DISTINGUIDO';
         else if (sumaPuntajes >= 60) categoria = 'SUFICIENTE';
 
-        // D. Actualizar Cabecera Final
-        await evaluacion.update({
+        // D. Actualización Final de Cabecera
+        await evaluacionHeader.update({
             puntajeFinal: sumaPuntajes,
             categoria: categoria,
-            fechaCierre: new Date() 
-            // Opcional: cambiar estado a 'FINALIZADO' si es el submit final
+            estado: 'AUDITADO', 
+            fechaCierre: new Date() // Timestamp de auditoría
         }, { transaction: t });
 
-        await t.commit(); // ¡Éxito!
+        // 3. Commit de la Transacción
+        await t.commit();
+        console.log(`[EvaluacionController] Éxito. Nota Final: ${sumaPuntajes}, Categoría: ${categoria}`);
 
-        res.json({
+        return res.json({
             success: true,
-            message: 'Evaluación guardada y procesada correctamente',
+            message: 'Evaluación guardada correctamente.',
             data: {
-                idEvaluacion: evaluacion.idEvaluacion,
+                idEvaluacion: headerId,
                 puntajeTotal: sumaPuntajes,
                 categoria
             }
         });
 
     } catch (error) {
-        await t.rollback(); // Revertir si algo falla
-        console.error("Error en transacción:", error);
-        res.status(500).json({ 
+        // 4. Rollback en caso de error (Deshacer cambios en BD)
+        await t.rollback();
+        console.error("[EvaluacionController] Transacción fallida:", error);
+        
+        return res.status(500).json({ 
             success: false, 
-            message: error.message || 'Error interno del servidor al guardar evaluación.' 
+            message: `Error al procesar la evaluación: ${error.message}` 
         });
     }
 };
