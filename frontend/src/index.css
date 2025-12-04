@@ -1,57 +1,167 @@
+:root {
+  /* --- PALETA DE COLORES ROYAL NAVY --- */
+  --navy-dark: #05101c;       /* Fondo principal muy oscuro */
+  --navy-medium: #0a192f;     /* Fondo de tarjetas */
+  --navy-light: #112240;      /* Fondo de inputs/elementos */
+  
+  --gold-shiny: #d4af37;      /* Dorado metálico */
+  --gold-dim: #c5a017;        /* Dorado oscuro para bordes */
+  --gold-light: #f7e7ce;      /* Dorado muy claro para textos suaves */
+  
+  --text-main: #e6f1ff;       /* Blanco azulado para lectura */
+  --text-muted: #8892b0;      /* Gris azulado para textos secundarios */
+  
+  /* --- COLORES DE ESTADO (BOTONES) --- */
+  --btn-blue: #007bff;        /* Acción Principal */
+  --btn-red: #dc3545;         /* Peligro / Salir */
+  --btn-yellow: #ffc107;      /* Advertencia / Pendiente */
+  --btn-green: #28a745;       /* Éxito / Finalizado */
+}
+
+/* === CONFIGURACIÓN BASE === */
 body {
   margin: 0;
   padding: 0;
-  min-width: 320px;
+  background-color: var(--navy-dark);
+  color: var(--text-main);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100vh;
 }
 
-/* Hacemos que el contenido principal tenga un ancho máximo y esté centrado */
 #root {
   max-width: 1280px;
-  margin: 0 auto; /* Centrado horizontal */
+  margin: 0 auto;
   padding: 2rem;
 }
 
-h1 {
-  font-size: 2.2em;
-  line-height: 1.1;
+/* === TIPOGRAFÍA DORADA === */
+h1, h2, h3 {
+  color: var(--gold-shiny);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--gold-dim);
+  display: inline-block;
+  padding-bottom: 5px;
+  text-shadow: 0px 2px 4px rgba(0,0,0,0.5); /* Sombra para dar relieve */
 }
 
-button {
+/* === CONTENEDORES Y TARJETAS === */
+/* Forzamos estilos sobre los divs blancos que teníamos antes */
+div[style*="background-color: white"], 
+div[style*="backgroundColor: 'white'"] {
+  background-color: var(--navy-medium) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--gold-dim);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(212, 175, 55, 0.1) !important;
+}
+
+/* === TABLAS DE LUJO === */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--navy-medium);
+  border: 1px solid var(--gold-dim);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+  overflow: hidden;
+}
+
+thead {
+  background: linear-gradient(180deg, var(--navy-light) 0%, var(--navy-dark) 100%);
+}
+
+th {
+  color: var(--gold-shiny);
+  padding: 15px;
+  text-align: left;
+  border-bottom: 2px solid var(--gold-shiny);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+
+td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #1e2d4d; /* Líneas sutiles */
+  color: var(--text-main);
+}
+
+/* Filas alternas para mejor lectura */
+tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+tr:hover {
+  background-color: rgba(212, 175, 55, 0.1); /* Brillo dorado al pasar el mouse */
+}
+
+/* Arreglar texto negro que forzamos antes en filas de título */
+tr[style*="color: #000"], tr[style*="color: rgb(0, 0, 0)"] {
+    color: var(--gold-shiny) !important;
+    background-color: var(--navy-dark) !important;
+}
+
+/* === INPUTS DELICADOS === */
+input {
+  background-color: var(--navy-dark);
+  border: 1px solid var(--navy-light);
+  color: var(--gold-light);
+  padding: 10px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  border-color: var(--gold-shiny);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.5); /* Resplandor dorado */
+}
+
+/* === BOTONES (La lógica de colores) === */
+button {
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  transition: transform 0.1s, filter 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
 button:hover {
-  border-color: #646cff;
+  filter: brightness(1.2); /* Más brillante al pasar el mouse */
+  transform: translateY(-1px);
 }
 
-/* Estilo para tablas */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden; /* Para que los bordes redondeados se vean */
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+button:active {
+  transform: translateY(1px);
 }
 
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+/* Sobrescribir colores inline con !important para asegurar el tema */
+
+/* Botón Rojo (Salir / Cancelar) */
+button[style*="background-color: #dc3545"],
+button[style*="backgroundColor: '#dc3545'"] {
+  background: linear-gradient(45deg, #8a0e0e, var(--btn-red)) !important;
+  border: 1px solid #ff4d4d;
 }
 
-/* Inputs más bonitos */
-input {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
+/* Botón Azul (Guardar / Principal) */
+button[style*="background-color: #007bff"],
+button[style*="backgroundColor: '#007bff'"],
+button[style*="background-color: #0056b3"] {
+  background: linear-gradient(45deg, #004085, var(--btn-blue)) !important;
+  border: 1px solid #4da3ff;
+}
+
+/* Botón Verde (Éxito / Autoevaluación) */
+button[style*="background-color: #28a745"],
+button[style*="backgroundColor: '#28a745'"] {
+  background: linear-gradient(45deg, #155724, var(--btn-green)) !important;
+  border: 1px solid #4dff88;
+}
+
+/* Etiquetas de Estado (Pills) */
+span[style*="background-color"] {
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
