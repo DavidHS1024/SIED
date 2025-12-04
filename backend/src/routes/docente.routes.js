@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getDocentes, createDocente } from '../controllers/docente.controller.js';
+import { getDocentesDashboard } from '../controllers/docente.controller.js';
 
 const router = Router();
 
-router.get('/', getDocentes);
-router.post('/', createDocente);
+// GET /api/docentes/dashboard
+router.get('/dashboard', getDocentesDashboard);
 
 export default router;

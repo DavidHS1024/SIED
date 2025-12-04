@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { RubricaService } from '../api/rubricaService';
 import { EvaluacionService } from '../api/evaluacionService';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const EvaluacionComision = () => {
     const [rubrica, setRubrica] = useState([]);
     const [loading, setLoading] = useState(true);
     const [respuestas, setRespuestas] = useState({}); // Almacena { idItem: { puntaje, observacion } }
     const [mensaje, setMensaje] = useState(null);
+    const { idDocente } = useParams(); // <--- CAPTURAMOS EL ID DE LA URL (ej: /evaluacion-comision/5)
+    const navigate = useNavigate();    // <--- Para el botón "Volver"
 
     // DATOS QUEMADOS (HARDCODED) PARA PRUEBA - LUEGO VENDRÁN DEL LOGIN/SELECCIÓN
-    const idDocente = 1; 
     const idPeriodo = 1;
     const idEvaluador = 99;
 
@@ -143,6 +145,7 @@ const EvaluacionComision = () => {
             </table>
 
             <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                <button onClick={() => navigate('/dashboard-comision')}>⬅ Volver al Panel</button>
                 <button 
                     onClick={handleSubmit}
                     style={{ 

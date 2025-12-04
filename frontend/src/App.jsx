@@ -1,22 +1,22 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+import DashboardComision from './pages/DashboardComision';
 import EvaluacionComision from './pages/EvaluacionComision';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Ruta por defecto: Redirigir al Login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-        
-        {/* Pantalla de Login */}
         <Route path="/login" element={<Login />} />
         
-        {/* Pantalla de Comisión */}
-        <Route path="/evaluacion-comision" element={<EvaluacionComision />} />
+        {/* Nueva Pantalla Principal */}
+        <Route path="/dashboard-comision" element={<DashboardComision />} />
         
-        {/* Ruta comodín para 404 */}
-        <Route path="*" element={<div>Página no encontrada</div>} />
+        {/* Ruta Dinámica: :idDocente captura el ID que viene del click */}
+        <Route path="/evaluacion-comision/:idDocente" element={<EvaluacionComision />} />
+        
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>
   );
