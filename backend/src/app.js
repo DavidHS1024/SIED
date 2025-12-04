@@ -6,7 +6,8 @@ import 'dotenv/config';
 // --- IMPORTAR RUTAS ---
 import rubricaRoutes from './routes/rubrica.routes.js';
 import docenteRoutes from './routes/docente.routes.js';
-import evaluacionRoutes from './routes/evaluacion.routes.js'; // <--- NUEVO
+import evaluacionRoutes from './routes/evaluacion.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -17,7 +18,8 @@ app.use(express.json());
 // --- USAR RUTAS ---
 app.use('/api/rubrica', rubricaRoutes);
 app.use('/api/docentes', docenteRoutes);
-app.use('/api/evaluacion', evaluacionRoutes); // <--- NUEVO
+app.use('/api/evaluacion', evaluacionRoutes);
+app.use('/api/auth', authRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
