@@ -8,10 +8,10 @@ const EvaluacionComision = () => {
     const [loading, setLoading] = useState(true);
     const [respuestas, setRespuestas] = useState({}); // Almacena { idItem: { puntaje, observacion } }
     const [mensaje, setMensaje] = useState(null);
-    const { idDocente } = useParams(); // <--- CAPTURAMOS EL ID DE LA URL (ej: /evaluacion-comision/5)
+    const { idDocente } = useParams(); // <--- CAPTURAMOS EL ID DE LA URL
     const navigate = useNavigate();    // <--- Para el botón "Volver"
 
-    // DATOS QUEMADOS (HARDCODED) PARA PRUEBA - LUEGO VENDRÁN DEL LOGIN/SELECCIÓN
+    // DATOS QUEMADOS PARA PRUEBA - LUEGO VENDRÁN DEL LOGIN/SELECCIÓN
     const idPeriodo = 1;
     const idEvaluador = 99;
 

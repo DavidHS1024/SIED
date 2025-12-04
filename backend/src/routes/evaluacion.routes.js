@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getEvaluacion, saveEvaluacionComision } from '../controllers/evaluacion.controller.js';
+import { getEvaluacion, saveEvaluacionComision, saveAutoevaluacion } from '../controllers/evaluacion.controller.js';
 
 const router = Router();
 

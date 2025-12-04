@@ -4,6 +4,7 @@ import DashboardComision from './pages/DashboardComision';
 import EvaluacionComision from './pages/EvaluacionComision';
 import DashboardDocente from './pages/DashboardDocente';
 import Autoevaluacion from './pages/Autoevaluacion';
+import DashboardDirector from './pages/DashboardDirector';
 
 function App() {
   return (
@@ -12,14 +13,14 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Nueva Pantalla Principal */}
         <Route path="/dashboard-comision" element={<DashboardComision />} />
         
-        {/* Ruta Dinámica: :idDocente captura el ID que viene del click */}
         <Route path="/evaluacion-comision/:idDocente" element={<EvaluacionComision />} />
 
         <Route path="/dashboard-docente" element={<DashboardDocente />} />
         <Route path="/autoevaluacion/:idDocente" element={<Autoevaluacion />} />
+
+        <Route path="/dashboard-director" element={<DashboardDirector />} />
         
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>

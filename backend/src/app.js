@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/database.js';
 import 'dotenv/config';
+import reporteRoutes from './routes/reporte.routes.js';
 
 // --- IMPORTAR RUTAS ---
 import rubricaRoutes from './routes/rubrica.routes.js';
@@ -20,6 +21,7 @@ app.use('/api/rubrica', rubricaRoutes);
 app.use('/api/docentes', docenteRoutes);
 app.use('/api/evaluacion', evaluacionRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/reportes', reporteRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {

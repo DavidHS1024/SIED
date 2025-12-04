@@ -23,8 +23,9 @@ const Login = () => {
                 navigate('/dashboard-comision');
             } else if (data.user.rol === 'DOCENTE') {  
                 navigate('/dashboard-docente');
+            } else if (data.user.rol === 'DIRECTOR') {
+                navigate('/dashboard-director');
             } else {
-                // Aquí pondremos más rutas luego (ej: /mis-resultados para docentes)
                 alert(`Bienvenido ${data.user.rol}. Tu módulo está en construcción.`);
             }
 
