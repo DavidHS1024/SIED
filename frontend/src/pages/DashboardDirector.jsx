@@ -41,11 +41,14 @@ const DashboardDirector = () => {
     );
 
     return (
-        <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '40px', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '20px' }}>
+                
                 <div>
-                    <h1 style={{ margin: 0 }}>Tablero de Control (Director)</h1>
-                    <p style={{ color: '#666', marginTop: '5px' }}>Periodo: {periodo}</p>
+                    <h1 style={{ marginBottom: '5px', textAlign: 'left' }}>Tablero de Control (Director)</h1>
+                    <p style={{ color: '#d4af37', fontSize: '1.1rem', margin: 0 }}>
+                        <span style={{color:'#8892b0'}}>PERIODO {periodo}</span>
+                    </p>
                 </div>
                 <button onClick={() => { AuthService.logout(); navigate('/login'); }} style={{background: '#333', color: 'white'}}>
                     Cerrar Sesión
@@ -53,7 +56,7 @@ const DashboardDirector = () => {
             </div>
 
             {/* SECCIÓN DE KPIs */}
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '40px', flexWrap: 'wrap'}}>
                 <StatCard title="Total Docentes" value={stats.total} color="#007bff" />
                 <StatCard title="Evaluados" value={`${stats.avance}%`} color="#28a745" />
                 <StatCard title="Pendientes" value={stats.pendientes} color="#ffc107" />
@@ -62,7 +65,7 @@ const DashboardDirector = () => {
             </div>
 
             {/* TABLA DETALLADA */}
-            <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '20px' }}>
+            <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '20px'}}>
                 <h2 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.2em' }}>Detalle por Docente</h2>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
