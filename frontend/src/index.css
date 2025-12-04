@@ -1,28 +1,49 @@
-/* === IMPORTAR FUENTES PREMIUM === */
+/**
+ * ============================================================================
+ * SIED v2.0 - GLOBAL STYLESHEET
+ * Theme: Royal Navy & Gold (High Command / Institutional)
+ * Architecture: CSS Variables + Glassmorphism + High Specificity Overrides
+ * ============================================================================
+ */
+
+/* --- 1. TYPOGRAPHY IMPORTS --- */
+/* Cinzel: Autoridad, Diplomas, Institucional (Títulos) */
+/* Roboto: Legibilidad, Modernidad (Cuerpo) */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap');
 
+/* --- 2. DESIGN TOKENS (VARIABLES) --- */
 :root {
-  /* --- PALETA ROYAL NAVY & GOLD --- */
-  --navy-deep: #020c1b;       /* Fondo más profundo */
-  --navy-card: rgba(10, 25, 47, 0.85); /* Cristal Oscuro */
-  --navy-light: #112240;
-  
-  --gold-primary: #d4af37;    /* Oro Metálico */
-  --gold-glow: rgba(212, 175, 55, 0.3);
-  --gold-text: #f7e7ce;
-  
-  --text-main: #e6f1ff;
-  --text-dim: #8892b0;
+  /* Palette: Deep Ocean */
+  --navy-deep: #020c1b;       /* Fondo base (casi negro) */
+  --navy-medium: #0a192f;     /* Fondo secundario */
+  --navy-light: #112240;      /* Superficies elevadas */
+  --navy-glass: rgba(10, 25, 47, 0.85); /* Cristal ahumado */
 
-  --glass-border: 1px solid rgba(212, 175, 55, 0.15);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  /* Palette: Gold Command */
+  --gold-primary: #d4af37;    /* Dorado Metálico estándar */
+  --gold-hover: #f0c040;      /* Dorado brillante (hover) */
+  --gold-dim: #8a7020;        /* Dorado oscuro (bordes sutiles) */
+  --gold-glow: rgba(212, 175, 55, 0.15); /* Resplandor */
+
+  /* Palette: Functional */
+  --text-main: #e6f1ff;       /* Blanco azulado (lectura cómoda) */
+  --text-muted: #8892b0;      /* Gris acero (metadatos) */
+  --success: #64ffda;         /* Cian/Verde neón (Aprobado) */
+  --danger: #ff6b6b;          /* Rojo suave (Error/Peligro) */
+  --warning: #ffd700;         /* Amarillo (Pendiente) */
+
+  /* Effects */
+  --glass-border: 1px solid rgba(212, 175, 55, 0.2);
+  --glass-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+  --transition-std: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
-/* === RESET & BASE === */
+/* --- 3. GLOBAL RESET & BASE --- */
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(circle at 50% 0%, #1b2d4a 0%, var(--navy-deep) 100%);
+  /* Fondo con iluminación central (Spotlight Effect) */
+  background: radial-gradient(ellipse at 50% 0%, #1b2d4a 0%, var(--navy-deep) 100%);
   background-attachment: fixed;
   color: var(--text-main);
   font-family: 'Roboto', sans-serif;
@@ -31,205 +52,217 @@ body {
   overflow-x: hidden;
 }
 
-/* Scrollbar de Lujo */
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--navy-deep);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--navy-light);
-  border: 1px solid var(--gold-primary);
-  border-radius: 5px;
-}
-
 #root {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* === TIPOGRAFÍA DE AUTORIDAD === */
-h1, h2, h3 {
-  font-family: 'Cinzel', serif; /* Fuente estilo Romano/Universitario */
+/* Custom Scrollbar (Estilo Navegación) */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--navy-deep); }
+::-webkit-scrollbar-thumb {
+  background-color: var(--navy-light);
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+}
+
+/* --- 4. TYPOGRAPHY SYSTEM --- */
+h1, h2, h3, h4 {
+  font-family: 'Cinzel', serif;
   color: var(--gold-primary);
-  text-align: center; /* Centrado por defecto */
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 1.5rem;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  position: relative;
-  display: block;
+  margin: 0 0 1.5rem 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-/* Línea decorativa debajo de los títulos */
-h1::after, h2::after {
-  content: '';
-  display: block;
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
-  margin: 10px auto 0;
+h1 {
+  font-size: 2.5rem;
+  text-align: center;
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, transparent, var(--gold-dim), transparent) 1;
+  padding-bottom: 0.5rem;
 }
 
-/* === TRANSICIONES Y ANIMACIONES === */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Aplicar animación a todo el contenido principal */
-#root > div {
-  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-/* === OVERRIDES: LA MAGIA DEL CRISTAL === */
-/* Forzamos que los divs blancos (inline styles) se vuelvan oscuros y transparentes */
+/* --- 5. GLASSMORPHISM CARDS (OVERRIDES) --- */
+/* TRUCO PROFESIONAL:
+   Usamos selectores de atributo para forzar el estilo sobre los 'divs' blancos 
+   que ya existen en tu código JSX (Dashboard, Login, etc).
+   Esto evita tener que reescribir todos los archivos .jsx ahora mismo.
+*/
 div[style*="background-color: white"], 
 div[style*="backgroundColor: 'white'"],
 .glass-card {
-  background-color: var(--navy-card) !important;
-  backdrop-filter: blur(12px); /* Efecto borroso detrás */
-  -webkit-backdrop-filter: blur(12px);
+  background-color: var(--navy-glass) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: var(--glass-border) !important;
   box-shadow: var(--glass-shadow) !important;
   color: var(--text-main) !important;
-  border-radius: 12px !important;
+  border-radius: 8px !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 div[style*="background-color: white"]:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5) !important;
   border-color: var(--gold-primary) !important;
 }
 
-/* === TABLAS PREMIUM === */
+/* --- 6. DATA TABLES (TABLAS) --- */
 table {
   width: 100%;
-  border-collapse: separate; 
-  border-spacing: 0 8px; /* Espacio entre filas */
+  border-collapse: separate;
+  border-spacing: 0;
   background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
+  margin-top: 1rem;
 }
 
-thead {
-  background: transparent;
+thead tr {
+  background-color: var(--navy-light) !important;
 }
 
-thead th {
+th {
   font-family: 'Cinzel', serif;
   color: var(--gold-primary);
+  padding: 1.2rem 1rem;
+  text-align: left;
   font-size: 0.9rem;
-  letter-spacing: 1px;
-  padding: 15px;
-  border-bottom: 1px solid var(--gold-primary);
-}
-
-tbody tr {
-  background-color: rgba(17, 34, 64, 0.6);
-  transition: all 0.2s ease;
-}
-
-tbody tr:hover {
-  background-color: rgba(212, 175, 55, 0.1);
-  transform: scale(1.01);
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--gold-dim);
 }
 
 td {
-  padding: 15px;
-  border: none;
-  color: var(--text-main);
+  padding: 1rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  color: var(--text-muted);
+  transition: color 0.2s;
 }
 
-/* Primera y última celda redondeadas */
-tbody tr td:first-child { border-radius: 8px 0 0 8px; border-left: 2px solid transparent; }
-tbody tr:hover td:first-child { border-left: 2px solid var(--gold-primary); }
-tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+/* Efecto Hover en Filas */
+tbody tr { transition: background-color 0.2s; }
+tbody tr:hover {
+  background-color: rgba(212, 175, 55, 0.05); /* Brillo dorado muy sutil */
+}
+tbody tr:hover td { color: var(--text-main); }
 
-/* === INPUTS Y FORMS === */
-input, select {
-  background-color: rgba(2, 12, 27, 0.7) !important;
+/* --- 7. FORMS & INPUTS --- */
+input, select, textarea {
+  background-color: rgba(2, 12, 27, 0.5) !important;
   border: 1px solid var(--navy-light) !important;
-  color: var(--gold-text) !important;
+  color: var(--text-main) !important;
   padding: 12px !important;
-  border-radius: 6px !important;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+  border-radius: 4px !important;
+  font-family: 'Roboto', sans-serif;
+  transition: var(--transition-std);
 }
 
-input:focus {
-  border-color: var(--gold-primary) !important;
-  box-shadow: 0 0 10px var(--gold-glow) !important;
+input:focus, select:focus {
   outline: none;
+  border-color: var(--gold-primary) !important;
+  box-shadow: 0 0 0 1px var(--gold-glow) !important;
 }
 
-/* === BOTONES GLORIOSOS === */
+label {
+  color: var(--gold-primary) !important;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* --- 8. BUTTON SYSTEM --- */
 button {
   font-family: 'Cinzel', serif;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  padding: 12px 24px;
-  border-radius: 4px;
-  border: 1px solid transparent;
+  border-radius: 4px !important;
+  cursor: pointer;
+  transition: var(--transition-std);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  border: 1px solid transparent;
 }
 
-/* Botón Primario (Azul) */
+/* Botón Primario (Azul -> Dorado en hover) */
 button[style*="background-color: #007bff"],
-button[style*="backgroundColor: '#0056b3'"] {
-  background: linear-gradient(135deg, #0a192f 0%, #112240 100%) !important;
+button[style*="backgroundColor: '#007bff'"],
+button[style*="background-color: #0056b3"] {
+  background: transparent !important;
   border: 1px solid var(--gold-primary) !important;
   color: var(--gold-primary) !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
 button[style*="background-color: #007bff"]:hover,
-button[style*="backgroundColor: '#0056b3'"]:hover {
-  background: var(--gold-primary) !important;
-  color: var(--navy-deep) !important;
-  box-shadow: 0 0 20px var(--gold-glow);
+button[style*="backgroundColor: '#007bff'"]:hover,
+button[style*="background-color: #0056b3"]:hover {
+  background: var(--gold-glow) !important;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  transform: translateY(-2px);
 }
 
-/* Botón Verde (Acción Positiva) */
-button[style*="background-color: #28a745"] {
-  background: linear-gradient(135deg, #0e2916 0%, #1b4d2a 100%) !important;
-  border: 1px solid #28a745 !important;
-  color: #4dff88 !important;
+/* Botón Éxito (Verde -> Cian) */
+button[style*="background-color: #28a745"],
+button[style*="backgroundColor: '#28a745'"] {
+  background: rgba(100, 255, 218, 0.1) !important;
+  border: 1px solid var(--success) !important;
+  color: var(--success) !important;
 }
 button[style*="background-color: #28a745"]:hover {
-  background: #28a745 !important;
-  color: white !important;
-  box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+  background: rgba(100, 255, 218, 0.2) !important;
 }
 
-/* Botón Rojo (Peligro/Salir) */
+/* Botón Peligro/Salir (Rojo) */
 button[style*="background-color: #dc3545"],
 button[style*="background-color: #333"] { 
-  background: linear-gradient(135deg, #290e0e 0%, #4d1b1b 100%) !important;
-  border: 1px solid #dc3545 !important;
-  color: #ff6b6b !important;
-}
-button[style*="background-color: #dc3545"]:hover,
-button[style*="background-color: #333"]:hover {
-  background: #dc3545 !important;
-  color: white !important;
-  box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+  background: rgba(255, 107, 107, 0.1) !important;
+  border: 1px solid var(--danger) !important;
+  color: var(--danger) !important;
 }
 
-/* === PILLS / ETIQUETAS === */
+/* --- CORRECCIÓN CRÍTICA: BOTÓN DESHABILITADO --- */
+/* Soluciona el problema del botón gris ilegible */
+button:disabled,
+button[disabled] {
+  background-color: #1c2636 !important; /* Fondo oscuro */
+  border-color: #2d3a4f !important;
+  color: #4f5b6d !important; /* Texto gris oscuro pero legible */
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
+  opacity: 0.7;
+}
+
+/* --- 9. UTILITIES & ANIMATIONS --- */
+/* Etiquetas de estado (Pills) */
 span[style*="border-radius: 15px"],
 span[style*="border-radius: 12px"] {
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   font-weight: bold;
-  text-transform: uppercase;
   font-size: 0.75rem !important;
   letter-spacing: 1px;
-  padding: 6px 12px !important;
+  padding: 4px 12px !important;
+  background: rgba(255,255,255,0.05) !important; /* Fondo neutro base */
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Fade In Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-enter {
+  animation: fadeInUp 0.6s ease-out forwards;
 }
