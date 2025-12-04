@@ -20,7 +20,9 @@ const Login = () => {
             console.log("Usuario logueado:", data.user);
             
             if(data.user.rol === 'COMISION') {
-                navigate('/evaluacion-comision');
+                navigate('/dashboard-comision');
+            } else if (data.user.rol === 'DOCENTE') {  
+                navigate('/dashboard-docente');
             } else {
                 // Aquí pondremos más rutas luego (ej: /mis-resultados para docentes)
                 alert(`Bienvenido ${data.user.rol}. Tu módulo está en construcción.`);

@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import DashboardComision from './pages/DashboardComision';
 import EvaluacionComision from './pages/EvaluacionComision';
+import DashboardDocente from './pages/DashboardDocente';
+import Autoevaluacion from './pages/Autoevaluacion';
 
 function App() {
   return (
@@ -15,6 +17,9 @@ function App() {
         
         {/* Ruta Dinámica: :idDocente captura el ID que viene del click */}
         <Route path="/evaluacion-comision/:idDocente" element={<EvaluacionComision />} />
+
+        <Route path="/dashboard-docente" element={<DashboardDocente />} />
+        <Route path="/autoevaluacion/:idDocente" element={<Autoevaluacion />} />
         
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>

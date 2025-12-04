@@ -144,8 +144,19 @@ const EvaluacionComision = () => {
                 </tbody>
             </table>
 
-            <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                <button onClick={() => navigate('/dashboard-comision')}>⬅ Volver al Panel</button>
+          <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                <button onClick={() => navigate('/dashboard-comision')}
+                    style={{ 
+                        padding: '15px 30px', 
+                        fontSize: '16px', 
+                        backgroundColor: '#007bff', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '5px',
+                        cursor: 'pointer'
+                    }}
+                >⬅ Volver al Panel</button>
+
                 <button 
                     onClick={handleSubmit}
                     style={{ 

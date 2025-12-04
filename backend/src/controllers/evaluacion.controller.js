@@ -1,10 +1,27 @@
-import { sequelize, EvaluacionDocente, DetalleEvaluacion } from '../models/index.js';
+import { sequelize, EvaluacionDocente, DetalleEvaluacion, Periodo } from '../models/index.js';
 
 /**
- * CONTROLADOR DE EVALUACIÓN DOCENTE (Corregido)
- * Alineado con Enum Database: 'EN_PROCESO' | 'FINALIZADO'
+ * Función auxiliar: Recalcula el puntaje total leyendo TODA la base de datos.
+ * Esto evita que al guardar solo 1 item se pierdan las notas de los otros.
  */
+const recalcularPuntajeTotal = async (idEvaluacion, transaction) => {
+    const detalles = await DetalleEvaluacion.findAll({
+        where: { idEvaluacion },
+        transaction
+    });
 
+    const suma = detalles.reduce((acc, item) => acc + Number(item.puntajeObtenido), 0);
+    
+    // Calcular categoría
+    let categoria = 'DEFICIENTE';
+    if (suma >= 90) categoria = 'EXCELENTE';
+    else if (suma >= 80) categoria = 'DISTINGUIDO';
+    else if (suma >= 60) categoria = 'SUFICIENTE';
+
+    return { suma, categoria };
+};
+
+// GET: Obtener evaluación
 export const getEvaluacion = async (req, res) => {
     const { idDocente, idPeriodo } = req.params;
     try {
@@ -14,94 +31,75 @@ export const getEvaluacion = async (req, res) => {
         });
         res.json({ success: true, data: evaluacion || null });
     } catch (error) {
-        console.error("[EvaluacionController] Error:", error);
-        res.status(500).json({ message: 'Error al obtener evaluación' });
+        res.status(500).json({ message: error.message });
     }
 };
 
+// POST: Guardado de la COMISIÓN (Cierra la evaluación)
 export const saveEvaluacionComision = async (req, res) => {
+    return procesarGuardado(req, res, 'FINALIZADO');
+};
+
+// POST: Guardado de la AUTOEVALUACIÓN (Mantiene en proceso)
+export const saveAutoevaluacion = async (req, res) => {
+    return procesarGuardado(req, res, 'EN_PROCESO');
+};
+
+// Lógica central de guardado (Reutilizable)
+const procesarGuardado = async (req, res, estadoFinal) => {
     const { idDocente, idPeriodo, detalles, idEvaluador } = req.body;
-
-    if (!idDocente || !idPeriodo || !Array.isArray(detalles)) {
-        return res.status(400).json({ success: false, message: 'Datos incompletos' });
-    }
-
     const t = await sequelize.transaction();
 
     try {
-        console.log(`[Evaluacion] Procesando Docente ID: ${idDocente} - Periodo: ${idPeriodo}`);
-
-        // 1. Buscar/Crear Cabecera
-        let [evaluacionHeader, created] = await EvaluacionDocente.findOrCreate({
+        // 1. Buscar o Crear Cabecera
+        let [evaluacion] = await EvaluacionDocente.findOrCreate({
             where: { idDocente, idPeriodo },
-            defaults: {
-                estado: 'EN_PROCESO',
-                puntajeFinal: 0
-            },
+            defaults: { estado: 'EN_PROCESO', puntajeFinal: 0 },
             transaction: t
         });
 
-        const headerId = evaluacionHeader.getDataValue('idEvaluacion') || evaluacionHeader.id;
+        const idEvaluacion = evaluacion.getDataValue('idEvaluacion') || evaluacion.id;
 
-        // 2. Guardar Detalles
-        let sumaPuntajes = 0;
+        // 2. Guardar/Actualizar cada detalle recibido
         for (const item of detalles) {
-            const puntaje = Number(item.puntaje) || 0;
-            
-            // Upsert del detalle
-            const detalleExistente = await DetalleEvaluacion.findOne({
-                where: { idEvaluacion: headerId, idItem: item.idItem },
-                transaction: t
-            });
+            const where = { idEvaluacion, idItem: item.idItem };
+            const data = {
+                puntajeObtenido: item.puntaje,
+                observacion: item.observacion,
+                evaluadoPor: idEvaluador,
+                fechaEvaluacion: new Date()
+            };
 
-            if (detalleExistente) {
-                await detalleExistente.update({
-                    puntajeObtenido: puntaje,
-                    observacion: item.observacion || '',
-                    evaluadoPor: idEvaluador,
-                    fechaEvaluacion: new Date()
-                }, { transaction: t });
+            const existe = await DetalleEvaluacion.findOne({ where, transaction: t });
+            if (existe) {
+                await existe.update(data, { transaction: t });
             } else {
-                await DetalleEvaluacion.create({
-                    idEvaluacion: headerId,
-                    idItem: item.idItem,
-                    puntajeObtenido: puntaje,
-                    observacion: item.observacion || '',
-                    evaluadoPor: idEvaluador,
-                    fechaEvaluacion: new Date()
-                }, { transaction: t });
+                await DetalleEvaluacion.create({ ...where, ...data }, { transaction: t });
             }
-            sumaPuntajes += puntaje;
         }
 
-        // 3. Calcular Categoría
-        let categoria = 'DEFICIENTE';
-        if (sumaPuntajes >= 90) categoria = 'EXCELENTE';
-        else if (sumaPuntajes >= 80) categoria = 'DISTINGUIDO';
-        else if (sumaPuntajes >= 60) categoria = 'SUFICIENTE';
+        // 3. MAGIA: Recalcular el total real sumando BD + Lo nuevo
+        const { suma, categoria } = await recalcularPuntajeTotal(idEvaluacion, t);
 
-        // 4. Actualizar Cabecera (Estado FINALIZADO)
-        // AQUI ESTABA EL ERROR: Cambiamos 'AUDITADO' por 'FINALIZADO'
-        await evaluacionHeader.update({
-            puntajeFinal: sumaPuntajes,
+        // 4. Actualizar Cabecera
+        await evaluacion.update({
+            puntajeFinal: suma,
             categoria: categoria,
-            estado: 'FINALIZADO', 
-            fechaCierre: new Date()
+            estado: estadoFinal, // La comisión finaliza, el docente no
+            fechaCierre: estadoFinal === 'FINALIZADO' ? new Date() : null
         }, { transaction: t });
 
         await t.commit();
-        console.log(`[Evaluacion] Guardado Exitoso. Estado: FINALIZADO. Nota: ${sumaPuntajes}`);
 
         res.json({
             success: true,
-            message: 'Evaluación guardada correctamente',
-            data: { puntajeTotal: sumaPuntajes, categoria }
+            message: 'Guardado correctamente',
+            data: { puntajeTotal: suma, categoria, estado: estadoFinal }
         });
 
     } catch (error) {
         await t.rollback();
-        console.error("[Evaluacion] Error Transaction:", error.message);
-        // Devolvemos el error exacto para que el frontend sepa qué pasó
-        res.status(500).json({ success: false, message: `Error BD: ${error.message}` });
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
