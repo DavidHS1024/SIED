@@ -33,7 +33,7 @@ export const getReporteGlobal = async (req, res) => {
         const listaDetallada = docentes.map(d => {
             const evalData = d.EvaluacionDocentes[0];
             const estado = evalData ? evalData.estado : 'PENDIENTE';
-            const nota = evalData ? evalData.puntajeFinal : 0;
+            const nota = evalData ? parseFloat(evalData.puntajeFinal) : 0;
             const cat = evalData ? evalData.categoria : '-';
 
             if (evalData && evalData.estado === 'FINALIZADO') {

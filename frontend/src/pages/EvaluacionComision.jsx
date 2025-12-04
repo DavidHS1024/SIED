@@ -1,39 +1,66 @@
 import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { RubricaService } from '../api/rubricaService';
 import { EvaluacionService } from '../api/evaluacionService';
-import { useParams, useNavigate } from 'react-router-dom';
 
+/**
+ * RÚBRICA DE AUDITORÍA (COMISIÓN)
+ * Estilo: Royal Navy & Gold - High Command
+ * UX: Tabla densa pero legible, inputs de alto contraste.
+ */
 const EvaluacionComision = () => {
+    const { idDocente } = useParams();
+    const navigate = useNavigate();
+    
     const [rubrica, setRubrica] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [respuestas, setRespuestas] = useState({}); // Almacena { idItem: { puntaje, observacion } }
+    const [respuestas, setRespuestas] = useState({}); 
     const [mensaje, setMensaje] = useState(null);
-    const { idDocente } = useParams(); // <--- CAPTURAMOS EL ID DE LA URL
-    const navigate = useNavigate();    // <--- Para el botón "Volver"
 
-    // DATOS QUEMADOS PARA PRUEBA - LUEGO VENDRÁN DEL LOGIN/SELECCIÓN
+    // Datos de contexto (Simulados por ahora, vendrían del Auth/Periodo)
     const idPeriodo = 1;
-    const idEvaluador = 99;
+    const idEvaluador = 99; 
 
-    // 1. Cargar la Rúbrica al iniciar
     useEffect(() => {
         cargarDatos();
     }, []);
 
     const cargarDatos = async () => {
         try {
-            const data = await RubricaService.obtenerRubrica();
-            if(data.success) {
-                setRubrica(data.data); // Guardamos las dimensiones
+            // 1. Cargar estructura de la Rúbrica
+            const dataRubrica = await RubricaService.obtenerRubrica();
+            
+            // 2. Cargar evaluación previa (si existe) para pre-llenar
+            let previos = {};
+            try {
+                const dataEval = await EvaluacionService.obtenerEvaluacion(idDocente, idPeriodo);
+                if (dataEval.success && dataEval.data) {
+                    // Convertir array de detalles a objeto { idItem: { puntaje, observacion } }
+                    dataEval.data.DetalleEvaluacions.forEach(d => {
+                        previos[d.idItem] = {
+                            puntaje: d.puntajeObtenido,
+                            observacion: d.observacion
+                        };
+                    });
+                }
+            } catch (err) {
+                console.log("Sin evaluación previa, iniciando desde cero.");
+            }
+
+            if(dataRubrica.success) {
+                setRubrica(dataRubrica.data);
+                if (Object.keys(previos).length > 0) {
+                    setRespuestas(previos);
+                    setMensaje({ tipo: 'info', texto: '📂 Se han cargado datos previos de este docente.' });
+                }
             }
         } catch (error) {
-            console.error("Error cargando rúbrica");
+            setMensaje({ tipo: 'error', texto: "Error cargando rúbrica: " + error.message });
         } finally {
-            setLoading(false);
+            setTimeout(() => setLoading(false), 600);
         }
     };
 
-    // 2. Manejar cambios en los inputs (Puntaje y Observación)
     const handleInputChange = (idItem, campo, valor) => {
         setRespuestas(prev => ({
             ...prev,
@@ -44,9 +71,7 @@ const EvaluacionComision = () => {
         }));
     };
 
-    // 3. Enviar formulario al Backend
     const handleSubmit = async () => {
-        // Convertimos el objeto respuestas a un array limpio para la API
         const detallesArray = Object.keys(respuestas).map(key => ({
             idItem: parseInt(key),
             puntaje: respuestas[key].puntaje || 0,
@@ -54,122 +79,184 @@ const EvaluacionComision = () => {
         }));
 
         if (detallesArray.length === 0) {
-            alert("Por favor califique al menos un ítem.");
+            alert("⚠️ El formulario está vacío. Ingrese al menos un puntaje.");
             return;
         }
 
-        const payload = {
-            idDocente,
-            idPeriodo,
-            idEvaluador,
-            detalles: detallesArray
-        };
-
         try {
+            const payload = { idDocente, idPeriodo, idEvaluador, detalles: detallesArray };
             const resultado = await EvaluacionService.guardarEvaluacion(payload);
-            setMensaje({ tipo: 'success', texto: `✅ Guardado! Nota: ${resultado.data.puntajeTotal} (${resultado.data.categoria})` });
+            
+            // Feedback de éxito visual
+            setMensaje({ 
+                tipo: 'success', 
+                texto: `✅ AUDITORÍA GUARDADA CON ÉXITO. NOTA FINAL: ${resultado.data.puntajeTotal} (${resultado.data.categoria})` 
+            });
+            
+            // Scroll al inicio para ver el mensaje
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Opcional: Redirigir después de unos segundos
+            // setTimeout(() => navigate('/dashboard-comision'), 3000);
+
         } catch (error) {
-            setMensaje({ tipo: 'error', texto: `❌ Error: ${error.message}` });
+            setMensaje({ tipo: 'error', texto: `❌ ERROR DE GUARDADO: ${error.message}` });
         }
     };
 
-    if (loading) return <div>Cargando Rúbrica...</div>;
+    if (loading) return <div style={{padding:'100px', textAlign:'center', color:'var(--gold-primary)', letterSpacing:'3px'}}>CARGANDO EXPEDIENTE...</div>;
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-            <h1>Auditoría Docente (Comisión)</h1>
+        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
             
+            {/* HEADER DE EXPEDIENTE */}
+            <div style={{ 
+                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', 
+                marginBottom: '40px', borderBottom: '2px solid var(--gold-dim)', paddingBottom: '20px' 
+            }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <span style={{ fontSize: '2rem' }}>📋</span>
+                        <h1 style={{ margin: 0, fontSize: '2rem', border: 'none', textAlign: 'left' }}>
+                            Ficha de Evaluación
+                        </h1>
+                    </div>
+                    <p style={{ color: 'var(--text-muted)', margin: '5px 0 0 0', fontFamily: 'monospace', fontSize: '1.1rem' }}>
+                        EXPEDIENTE DOCENTE ID: <span style={{color:'var(--gold-primary)', fontWeight:'bold'}}>#{idDocente}</span>
+                    </p>
+                </div>
+                
+                <button 
+                    onClick={() => navigate('/dashboard-comision')}
+                    style={{ backgroundColor: 'transparent', border: '1px solid var(--text-muted)', color: 'var(--text-muted)' }}
+                >
+                    ↩ Cancelar / Volver
+                </button>
+            </div>
+
+            {/* ÁREA DE NOTIFICACIONES */}
             {mensaje && (
-                <div style={{ 
-                    padding: '10px', 
-                    backgroundColor: mensaje.tipo === 'success' ? '#d4edda' : '#f8d7da',
-                    color: mensaje.tipo === 'success' ? '#155724' : '#721c24',
-                    marginBottom: '20px', borderRadius: '5px'
+                <div className="animate-enter" style={{ 
+                    padding: '15px 20px', 
+                    background: mensaje.tipo === 'success' ? 'rgba(40, 167, 69, 0.2)' : mensaje.tipo === 'info' ? 'rgba(23, 162, 184, 0.2)' : 'rgba(220, 53, 69, 0.2)',
+                    borderLeft: `5px solid ${mensaje.tipo === 'success' ? 'var(--success)' : mensaje.tipo === 'info' ? '#17a2b8' : 'var(--danger)'}`,
+                    color: 'var(--text-main)',
+                    marginBottom: '30px', borderRadius: '4px',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
                 }}>
+                    <strong style={{marginRight: '10px', textTransform: 'uppercase'}}>{mensaje.tipo === 'success' ? 'ÉXITO' : 'SISTEMA'}:</strong> 
                     {mensaje.texto}
                 </div>
             )}
 
-            <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ backgroundColor: '#f2f2f2', color: '#000' }}>
-                        <th>Item</th>
-                        <th>Concepto / Indicador</th>
-                        <th>Max</th>
-                        <th>Puntaje</th>
-                        <th>Observación</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rubrica.map((dimension) => (
-                        <>
-                            {/* Fila de Título de Dimensión */}
-                            <tr key={`dim-${dimension.idDimension}`} style={{ backgroundColor: '#e9ecef', color: '#000' }}>
-                                <td colSpan="5" style={{ fontWeight: 'bold' }}>
-                                    {dimension.nombre} ({dimension.peso}%)
-                                </td>
-                            </tr>
-                            
-                            {/* Filas de Items */}
-                            {dimension.RubricaItems.map((item) => (
-                                <tr key={item.idItem}>
-                                    <td style={{ textAlign: 'center' }}>{item.numeroItem}</td>
-                                    <td>
-                                        {item.concepto}
-                                        <div style={{ fontSize: '0.8em', color: '#666' }}>Rol: {item.rolEvaluador}</div>
-                                    </td>
-                                    <td style={{ textAlign: 'center' }}>{item.puntajeMaximo}</td>
-                                    <td>
-                                        <input 
-                                            type="number" 
-                                            min="0" 
-                                            max={item.puntajeMaximo}
-                                            step="0.5"
-                                            style={{ width: '60px', padding: '5px' }}
-                                            onChange={(e) => handleInputChange(item.idItem, 'puntaje', e.target.value)}
-                                        />
-                                    </td>
-                                    <td>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Opcional"
-                                            style={{ width: '90%', padding: '5px' }}
-                                            onChange={(e) => handleInputChange(item.idItem, 'observacion', e.target.value)}
-                                        />
+            {/* TABLA DE RÚBRICA (GLASS PANEL) */}
+            <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
+                <table style={{ margin: 0 }}>
+                    <thead>
+                        <tr style={{ background: 'rgba(17, 34, 64, 0.9)' }}>
+                            <th style={{ width: '80px', textAlign: 'center' }}>#</th>
+                            <th>INDICADOR DE DESEMPEÑO</th>
+                            <th style={{ width: '100px', textAlign: 'center' }}>MAX</th>
+                            <th style={{ width: '120px', textAlign: 'center' }}>NOTA</th>
+                            <th style={{ width: '30%' }}>OBSERVACIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rubrica.map((dimension) => (
+                            <>
+                                {/* Separador de Dimensión */}
+                                <tr key={`dim-${dimension.idDimension}`} style={{ background: 'rgba(212, 175, 55, 0.15)' }}>
+                                    <td colSpan="5" style={{ 
+                                        padding: '15px 25px', 
+                                        color: 'var(--gold-primary)', 
+                                        fontFamily: 'Cinzel, serif', fontWeight: 'bold', letterSpacing: '1px',
+                                        borderTop: '1px solid var(--gold-dim)',
+                                        borderBottom: '1px solid var(--gold-dim)'
+                                    }}>
+                                        {dimension.nombre} <span style={{fontSize:'0.8em', opacity: 0.7, marginLeft: '10px'}}>({dimension.peso}%)</span>
                                     </td>
                                 </tr>
-                            ))}
-                        </>
-                    ))}
-                </tbody>
-            </table>
+                                
+                                {/* Items de la Dimensión */}
+                                {dimension.RubricaItems.map((item) => {
+                                    const valPuntaje = respuestas[item.idItem]?.puntaje || '';
+                                    const valObs = respuestas[item.idItem]?.observacion || '';
+                                    
+                                    // Detectar si es autoevaluación (Rol DOCENTE) para deshabilitar o marcar
+                                    const isAuto = item.rolEvaluador === 'DOCENTE';
 
-          <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                <button onClick={() => navigate('/dashboard-comision')}
-                    style={{ 
-                        padding: '15px 30px', 
-                        fontSize: '16px', 
-                        backgroundColor: '#007bff', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '5px',
-                        cursor: 'pointer'
-                    }}
-                >⬅ Volver al Panel</button>
+                                    return (
+                                        <tr key={item.idItem} style={{ background: isAuto ? 'rgba(0,0,0,0.2)' : 'transparent' }}>
+                                            <td style={{ textAlign: 'center', fontWeight: 'bold', opacity: 0.5 }}>
+                                                {item.numeroItem}
+                                            </td>
+                                            <td style={{ paddingRight: '30px' }}>
+                                                <div style={{ marginBottom: '5px', lineHeight: '1.4' }}>{item.concepto}</div>
+                                                <div style={{ fontSize: '0.75rem', color: isAuto ? 'var(--warning)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                    {isAuto ? '⚠️ Llenado por el Docente' : `Responsable: ${item.rolEvaluador}`}
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '1.1rem' }}>
+                                                {item.puntajeMaximo}
+                                            </td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                <input 
+                                                    type="number" 
+                                                    min="0" 
+                                                    max={item.puntajeMaximo}
+                                                    step="0.5"
+                                                    disabled={isAuto} // La comisión no debe editar la autoevaluación aquí
+                                                    value={valPuntaje}
+                                                    onChange={(e) => handleInputChange(item.idItem, 'puntaje', e.target.value)}
+                                                    placeholder="0"
+                                                    style={{ 
+                                                        width: '70px', textAlign: 'center', 
+                                                        fontSize: '1.1rem', fontWeight: 'bold',
+                                                        border: valPuntaje ? '1px solid var(--success)' : undefined,
+                                                        color: isAuto ? 'var(--text-muted)' : 'var(--gold-text)'
+                                                    }}
+                                                />
+                                            </td>
+                                            <td>
+                                                <input 
+                                                    type="text" 
+                                                    value={valObs}
+                                                    disabled={isAuto}
+                                                    onChange={(e) => handleInputChange(item.idItem, 'observacion', e.target.value)}
+                                                    placeholder={isAuto ? "Campo reservado al docente" : "Observación opcional..."}
+                                                    style={{ width: '95%', fontSize: '0.9rem', fontStyle: 'italic' }}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
+            {/* BARRA DE ACCIÓN FIJA INFERIOR (Para que siempre esté a mano) */}
+            <div style={{ 
+                position: 'sticky', bottom: '20px', marginTop: '40px',
+                background: 'var(--navy-glass)', backdropFilter: 'blur(15px)',
+                padding: '20px', borderRadius: '10px', border: '1px solid var(--gold-dim)',
+                display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '20px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 100
+            }}>
+                <div style={{ color: 'var(--text-muted)', marginRight: 'auto', paddingLeft: '10px' }}>
+                    <span style={{ color: 'var(--warning)' }}>⚠️</span> Revise todos los puntajes antes de cerrar el acta.
+                </div>
                 <button 
                     onClick={handleSubmit}
                     style={{ 
-                        padding: '15px 30px', 
-                        fontSize: '16px', 
-                        backgroundColor: '#007bff', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '5px',
-                        cursor: 'pointer'
+                        backgroundColor: 'var(--btn-blue)', 
+                        padding: '15px 40px', 
+                        fontSize: '1.1rem',
+                        boxShadow: '0 0 15px rgba(0, 123, 255, 0.4)'
                     }}
                 >
-                    💾 Guardar Evaluación Final
+                    💾 Guardar y Finalizar Auditoría
                 </button>
             </div>
         </div>

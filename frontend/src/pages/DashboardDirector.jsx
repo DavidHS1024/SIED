@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 /**
  * TABLERO DE MANDO - DIRECTOR (ESTRATÉGICO)
  * Estilo: Royal Navy & Gold
- * Enfoque: KPIs claros y jerarquía visual alta.
  */
 const DashboardDirector = () => {
     const [reporte, setReporte] = useState(null);
@@ -24,22 +23,20 @@ const DashboardDirector = () => {
         } catch (error) {
             console.error(error);
         } finally {
-            // Pequeño delay artificial para suavidad en la transición
             setTimeout(() => setLoading(false), 500);
         }
     };
 
-    if (loading) return <div style={{padding: '100px', textAlign:'center', color:'var(--gold-primary)', fontSize:'1.2rem', letterSpacing:'2px'}}>GENERANDO INFORME ESTRATÉGICO...</div>;
+    if (loading) return <div style={{padding: '100px', textAlign:'center', color:'var(--gold-primary)'}}>GENERANDO INFORME ESTRATÉGICO...</div>;
     if (!reporte) return <div style={{padding: '40px', textAlign:'center', color:'var(--danger)'}}>Error de conexión con la base de datos.</div>;
 
     const { stats, data, periodo } = reporte;
 
-    // Componente Interno: Tarjeta de Estadística (KPI Card)
-    // Usa bordes superiores de color para diferenciar categorías visualmente
+    // Componente Interno: StatCard
     const StatCard = ({ title, value, color, icon }) => (
         <div className="glass-card" style={{ 
             padding: '25px', flex: 1, textAlign: 'center',
-            borderTop: `4px solid ${color}`, // Borde neón superior
+            borderTop: `4px solid ${color}`, 
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
             minWidth: '180px'
         }}>
@@ -49,7 +46,8 @@ const DashboardDirector = () => {
             </h3>
             <div style={{ 
                 fontSize: '2.5rem', fontWeight: '700', color: 'var(--text-main)',
-                textShadow: `0 0 20px ${color}40` // Brillo suave del color correspondiente
+                // Corrección: Usamos drop-shadow en lugar de concatenar alpha al color
+                filter: `drop-shadow(0 0 10px ${color})` 
             }}>
                 {value}
             </div>
@@ -59,7 +57,7 @@ const DashboardDirector = () => {
     return (
         <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
             
-            {/* HEADER ESTRATÉGICO */}
+            {/* HEADER */}
             <div style={{ 
                 display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', 
                 marginBottom: '50px', borderBottom: '2px solid var(--gold-dim)', paddingBottom: '20px' 
@@ -85,7 +83,7 @@ const DashboardDirector = () => {
                 <StatCard 
                     title="PLANA DOCENTE" 
                     value={stats.total} 
-                    color="var(--btn-blue)" 
+                    color="#007bff" // Corrección: Color explícito (Hex) en vez de variable inexistente
                     icon="👥" 
                 />
                 <StatCard 
@@ -103,7 +101,7 @@ const DashboardDirector = () => {
                 <StatCard 
                     title="ALTO RENDIMIENTO" 
                     value={stats.porCategoria.EXCELENTE} 
-                    color="#00f2ff" // Cian brillante
+                    color="#00f2ff" 
                     icon="⭐" 
                 />
                 <StatCard 
@@ -125,7 +123,7 @@ const DashboardDirector = () => {
                         <tr>
                             <th style={{ paddingLeft: '30px' }}>CÓDIGO</th>
                             <th>DOCENTE</th>
-                            <th style={{ textAlign: 'center' }}>ESTADO</th>
+                            <th style={{QmtextAlign: 'center' }}>ESTADO</th>
                             <th style={{ textAlign: 'center' }}>PUNTAJE</th>
                             <th style={{ textAlign: 'center' }}>CATEGORÍA</th>
                         </tr>
@@ -150,7 +148,8 @@ const DashboardDirector = () => {
                                     </span>
                                 </td>
                                 <td style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                                    {d.nota > 0 ? d.nota.toFixed(2) : <span style={{opacity:0.3}}>-</span>}
+                                    {/* CORRECCIÓN CRÍTICA: Convertimos a Number antes de usar toFixed */}
+                                    {Number(d.nota) > 0 ? Number(d.nota).toFixed(2) : <span style={{opacity:0.3}}>-</span>}
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
                                     <span style={{

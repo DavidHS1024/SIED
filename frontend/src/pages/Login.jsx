@@ -72,30 +72,30 @@ const Login = () => {
                 {/* Encabezado Institucional */}
                 <div style={{ marginBottom: '2rem' }}>
                     <div style={{ 
-                        fontSize: '4rem', 
+                        fontSize: '5rem', 
                         marginBottom: '1rem',
                         filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.3))'
                     }}>
                         🏛️
                     </div>
                     <h1 style={{ 
-                        fontSize: '2.5rem', 
+                        fontSize: '4rem', 
                         marginBottom: '0.5rem',
                         border: 'none',
                         textShadow: '0 4px 10px rgba(0,0,0,0.5)'
                     }}>
-                        SIED v2.0
+                        SIED
                     </h1>
                     <p style={{ 
                         color: '#8892b0', 
                         letterSpacing: '3px', 
                         textTransform: 'uppercase',
-                        fontSize: '0.8rem',
+                        fontSize: '0.9rem',
                         borderTop: '1px solid rgba(212, 175, 55, 0.2)',
                         paddingTop: '1rem',
                         display: 'inline-block'
                     }}>
-                        Sistema de Auditoría Académica
+                        Sistema Integral de Evaluación Docente
                     </p>
                 </div>
 
