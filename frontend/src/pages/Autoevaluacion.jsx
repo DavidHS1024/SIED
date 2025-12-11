@@ -49,12 +49,16 @@ const Autoevaluacion = () => {
         if (itemsDocente.length === 0) return;
         const item = itemsDocente[0]; 
         
-        if (puntaje > item.puntajeMaximo) {
+        if (Number(puntaje) > Number(item.puntajeMaximo)) {
             setMensaje({ tipo: 'error', texto: `⚠️ El puntaje máximo permitido es ${item.puntajeMaximo}` });
             return;
         }
-        if (puntaje < 0) {
+        if (Number(puntaje) < 0) {
             setMensaje({ tipo: 'error', texto: `⚠️ El puntaje no puede ser negativo.` });
+            return;
+        }
+        if (!Number.isInteger(Number(puntaje))) {
+            setMensaje({ tipo: 'error', texto: '⚠️ Solo se permite puntajes enteros.' });
             return;
         }
 
@@ -141,10 +145,10 @@ const Autoevaluacion = () => {
                                     <input 
                                         type="number" 
                                         value={puntaje}
-                                        onChange={(e) => setPuntaje(e.target.value)}
+                                        onChange={(e) => setPuntaje(parseFloat(e.target.value) || 0)}
                                         min="0"
                                         max={item.puntajeMaximo}
-                                        step="0.5"
+                                        step="1"
                                         style={{ 
                                             fontSize: '2rem', width: '100px', textAlign: 'center', 
                                             color: 'var(--gold-primary)', fontWeight: 'bold',
