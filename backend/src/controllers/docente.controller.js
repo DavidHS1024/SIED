@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 export const getDocentesDashboard = async (req, res) => {
     try {
-        // 1. Obtener el periodo activo (Asumimos ID 1 por ahora o el que esté ACTIVO)
+        // 1. Obtener el periodo activo
         const periodoActivo = await Periodo.findOne({ where: { estado: 'ACTIVO' } });
         
         if (!periodoActivo) {
@@ -20,7 +20,7 @@ export const getDocentesDashboard = async (req, res) => {
                 {
                     model: EvaluacionDocente,
                     where: { idPeriodo: periodoActivo.idPeriodo },
-                    required: false, // LEFT JOIN: Trae al docente aunque no tenga evaluación
+                    required: false,
                     attributes: ['idEvaluacion', 'estado', 'puntajeFinal', 'categoria']
                 }
             ]

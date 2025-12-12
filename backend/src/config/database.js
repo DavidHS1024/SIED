@@ -5,11 +5,11 @@ import 'dotenv/config';
 export const sequelize = new Sequelize(process.env.DB_URL, {
     dialect: 'postgres',
     protocol: 'postgres',
-    logging: false, // Pon true si quieres ver cada consulta SQL en la consola
+    logging: false,
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false // Necesario para que Render acepte la conexión externa
+            rejectUnauthorized: false
         }
     }
 });

@@ -57,7 +57,7 @@ CargaLectiva.hasMany(EncuestaResultado, { foreignKey: 'idCarga' });
 EncuestaResultado.belongsTo(CargaLectiva, { foreignKey: 'idCarga' });
 
 export {
-    sequelize, // Exportamos la instancia para usarla en app.js
+    sequelize, // Exportar la instancia para usarla en app.js
     Usuario,
     Docente,
     Periodo,

@@ -11,14 +11,11 @@ const seed = async () => {
         console.log('🌱 Iniciando Seed SIED v2.0...');
         
         await connectDB();
-        // force: true recrea las tablas basándose en tus MODELOS. 
-        // Asegúrate que tus modelos (Dimension.js, RubricaItem.js) tengan los campos correctos.
+        // force: true recrea las tablas basándose en los MODELOS.
         await sequelize.sync({ force: true }); 
         console.log('✅ Base de datos sincronizada (Tablas limpias).');
 
-        // ------------------------------------------------------------------------
         // 1. USUARIOS Y ACTORES
-        // ------------------------------------------------------------------------
         const passwordHash = await bcrypt.hash('123456', 10);
 
         // A. Admin
@@ -58,11 +55,11 @@ const seed = async () => {
             passwordHash,
             nombres: 'Comisión',
             apellidos: 'Evaluadora',
-            rol: 'COMISION', // Según tu ENUM
+            rol: 'COMISION',
             estado: true
         });
 
-        // D. Director (Nuevo actor en tu SQL v2)
+        // D. Director
         await Usuario.create({
             idUsuario: 100,
             email: 'director@unac.edu.pe',
@@ -75,9 +72,7 @@ const seed = async () => {
 
         console.log('✅ Usuarios creados (Admin, Docente, Comisión, Director).');
 
-        // ------------------------------------------------------------------------
         // 2. PERIODO ACADÉMICO
-        // ------------------------------------------------------------------------
         await Periodo.create({
             idPeriodo: 1,
             nombre: '2025-A',
@@ -87,9 +82,7 @@ const seed = async () => {
         });
         console.log('✅ Periodo 2025-A activo.');
 
-        // ------------------------------------------------------------------------
         // 3. RÚBRICA (DIMENSIONES E ITEMS - REGLAMENTO UNAC)
-        // ------------------------------------------------------------------------
         
         // Dimensión 1
         const dim1 = await Dimension.create({ 
@@ -122,7 +115,7 @@ const seed = async () => {
             descripcion: 'Grados, especializaciones, capacitación, movilidad' 
         });
 
-        // ITEMS (Carga Masiva)
+        // ITEMS
         const items = [
             // D1: Enseñanza
             { idDimension: 1, numeroItem: 1, concepto: 'Evaluación electrónica de estudiantes a docente', puntajeMaximo: 5.00, rolEvaluador: 'SISTEMA' },

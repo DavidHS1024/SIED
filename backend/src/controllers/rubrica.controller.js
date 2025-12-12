@@ -7,7 +7,7 @@ export const getRubricaCompleta = async (req, res) => {
             include: [{
                 model: RubricaItem,
                 as: 'RubricaItems', // Sequelize pluraliza automáticamente, pero a veces requiere ajuste
-                // Ordenamos los items por su número (1, 2, 3...)
+                // Ordenar los items por su número (1, 2, 3...)
                 order: [['numeroItem', 'ASC']]
             }],
             // Ordenamos las dimensiones por su ID

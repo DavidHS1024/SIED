@@ -2,8 +2,9 @@ import { sequelize, EvaluacionDocente, DetalleEvaluacion, Periodo } from '../mod
 
 /**
  * Función auxiliar: Recalcula el puntaje total leyendo TODA la base de datos.
- * Esto evita que al guardar solo 1 item se pierdan las notas de los otros.
+ * Eevita que al guardar solo 1 item se pierdan las notas de los otros.
  */
+
 const recalcularPuntajeTotal = async (idEvaluacion, transaction) => {
     const detalles = await DetalleEvaluacion.findAll({
         where: { idEvaluacion },

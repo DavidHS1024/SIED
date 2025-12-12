@@ -33,7 +33,7 @@ const EvaluacionDocente = sequelize.define('EvaluacionDocente', {
     }
 }, {
     tableName: 'EvaluacionDocente',
-    timestamps: false, // No usar createdAt/updatedAt automáticos si la tabla no los tiene
+    timestamps: false,
     indexes: [
         {
             unique: true,

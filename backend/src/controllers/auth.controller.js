@@ -2,7 +2,7 @@ import { Usuario, Docente } from '../models/index.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-// Clave secreta para firmar los tokens (En producción debe ir en .env)
+// Clave secreta para firmar los tokens
 const JWT_SECRET = process.env.JWT_SECRET || 'sied_secreto_super_seguro_2025';
 
 export const login = async (req, res) => {

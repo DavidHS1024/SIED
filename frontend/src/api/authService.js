@@ -5,7 +5,7 @@ export const AuthService = {
         try {
             const response = await api.post('/auth/login', { email, password });
             
-            // Si el login es exitoso, guardamos el token y el usuario en el navegador
+            // Si el login es exitoso, guarda el token y el usuario en el navegador
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));

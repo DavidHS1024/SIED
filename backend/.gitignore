@@ -2,9 +2,9 @@
 node_modules/
 pnpm-lock.yaml
 yarn.lock
-# package-lock.json  <-- Opcional: A veces se sube, a veces no. En equipos se suele subir para garantizar versiones exactas.
+# package-lock.json
 
-# --- Entorno y Secretos (¡CRÍTICO!) ---
+# --- Entorno y Secretos ---
 .env
 .env.test
 .env.production
@@ -22,7 +22,7 @@ npm-debug.log
 .DS_Store
 Thumbs.db
 
-# --- IDEs (Opcional, para no subir tus configs personales de VSCode) ---
+# --- IDEs ---
 .idea/
 .vscode/
 *.swp

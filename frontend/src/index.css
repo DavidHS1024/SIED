@@ -92,7 +92,7 @@ h1 {
 /* TRUCO PROFESIONAL:
    Usamos selectores de atributo para forzar el estilo sobre los 'divs' blancos 
    que ya existen en tu código JSX (Dashboard, Login, etc).
-   Esto evita tener que reescribir todos los archivos .jsx ahora mismo.
+   Evita tener que reescribir todos los archivos .jsx ahora mismo.
 */
 div[style*="background-color: white"], 
 div[style*="backgroundColor: 'white'"],
